@@ -4,31 +4,26 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ImgFigure from './ImgFigure';
 import getRangeRandom from './Tools';
-
-//获取图片相关数据
-var imageDatas = require("../data/imageDatas.json");
-//利用自执行函数，将图片名信息转成图片URL路径信息
-imageDatas = (function genImageURL(imageDatasArr) {
-  for (var i = 0; i < imageDatasArr.length; i++) {
-    var singleImageData = imageDatasArr[i];
-    singleImageData.imageURL = require('../images/' + singleImageData.fileName);
-    imageDatasArr[i] = singleImageData;
-  }
-
-  return imageDatasArr;
-})(imageDatas);
-
-
-
-
-
+import imageDatas from './ImageDatas';
+import ControllerUnit from './ControllerUnit';
 
 
 class AppComponent extends React.Component {
-
+  /***
+   * 构造函数
+   * @param props
+   */
   constructor(props){
     super(props);
 
+    this.initData();
+  }
+
+  /***
+   * 初始化
+   */
+  initData(){
+    console.log("enter initData");
     this.state={
       imgsArrangeArr:[
       ]
@@ -37,18 +32,99 @@ class AppComponent extends React.Component {
     this.Constant={
       centerPos: {
         left: 0,
-          right: 0
+        right: 0
       },
       hPosRange: {//水平方向取值范围
         leftSecX: [0, 0],
-          rightSecX: [0, 0],
-          y: [0, 0]
+        rightSecX: [0, 0],
+        y: [0, 0]
       },
       vPosRange: { //垂直方向取值范围
         x: [0, 0],
-          topY: [0, 0]
+        topY: [0, 0]
       }
     };
+    imageDatas.forEach(function (value, index) {
+      if(!this.state.imgsArrangeArr[index]){
+        this.state.imgsArrangeArr[index]=value;
+        this.state.imgsArrangeArr[index].isInverse=false;
+        this.state.imgsArrangeArr[index].isCenter=false;
+        console.log("初始化第"+index+"个:"+JSON.stringify(value));
+      }
+    }.bind(this));
+  }
+
+  /***
+   * 从新构造图片组件和控制组件
+   */
+  createImgsAndUnits(){
+    console.log("enter createImgsAndUnits");
+    //重新渲染图片组件
+    this.imgFigures=[];
+    this.controllerUnits=[];
+    imageDatas.forEach(function (value, index) {
+    // debugger;
+      this.imgFigures.push(<ImgFigure key={index} data={value} ref={'imgFigure' + index} styleObj={this.state.imgsArrangeArr[index]} RarrangeEvent={this.clickRarrange(index)} Inverse={this.inverse(index)}/>);
+       this.controllerUnits.push(<ControllerUnit key={index} data={value}  styleObj={this.state.imgsArrangeArr[index]} RarrangeEvent={this.clickRarrange(index)} Inverse={this.inverse(index)}/>);
+    }.bind(this));
+  }
+
+  /***
+   * 渲染函数
+   * @returns {XML}
+   */
+  render() {
+    console.log("enter Render");
+    this.createImgsAndUnits()
+    return (
+      <section className="stage" ref="stage">
+        <section className="img-sec">
+          {this.imgFigures}
+        </section>
+        <nav className="controller-nav">
+          {this.controllerUnits}
+        </nav>
+      </section>
+    );
+  }
+
+  //组件加载以后，为每张图片计算其位置的范围
+  componentDidMount() {
+    console.log("enter componentDidMount");
+    //首先拿到舞台的大小
+    var stageDOM = ReactDOM.findDOMNode(this.refs.stage),
+      stageW = stageDOM.scrollWidth,
+      stageH = stageDOM.scrollHeight,
+      halfStageW = Math.ceil(stageW / 2),
+      halfStageH = Math.ceil(stageH / 2);
+
+    //拿到一个imageFiguire的大小
+    var imgFiguireDOM = ReactDOM.findDOMNode(this.refs.imgFigure0);
+    var  imgW = imgFiguireDOM.clientWidth,
+      imgH = imgFiguireDOM.clientHeight,
+      halfImgW = Math.ceil(imgW / 2),
+      halfImgH = Math.ceil(imgH / 2);
+    console.log("stageW:"+stageW+"stageH;"+stageH+"imgW:"+imgW+"imgH"+imgH);
+    //计算中心图片位置点
+    this.Constant.centerPos = {
+      left: halfStageW - halfImgW,
+      top: halfStageH - halfImgH
+    }
+
+    //计算左侧右侧区域图片排布位置的取值范围
+    this.Constant.hPosRange.leftSecX[0] = -halfImgW;
+    this.Constant.hPosRange.leftSecX[1] = halfImgW - halfImgW * 3;
+
+    this.Constant.hPosRange.rightSecX[0] = halfStageW - halfImgW;
+    this.Constant.hPosRange.rightSecX[1] = stageW - halfImgW;
+    this.Constant.hPosRange.y[0] = -halfImgH;
+    this.Constant.hPosRange.y[1] = stageH - halfImgH;
+    //计算上侧区域图片排布位置的取值范围
+    this.Constant.vPosRange.topY[0] = -halfImgH;
+    this.Constant.vPosRange.topY[1] = halfStageH - halfImgH * 3;
+    this.Constant.vPosRange.x[0] = halfImgW - imgW;
+    this.Constant.vPosRange.x[1] = halfImgW;
+    this.rearrange(2);
   }
 
   /***
@@ -133,52 +209,28 @@ class AppComponent extends React.Component {
     console.log("结尾:"+JSON.stringify(imgsArrangeArr));
   }
 
-  //组件加载以后，为每张图片计算其位置的范围
-  componentDidMount() {
-    console.log("enter componentDidMount");
-    //首先拿到舞台的大小
-    var stageDOM = ReactDOM.findDOMNode(this.refs.stage),
-      stageW = stageDOM.scrollWidth,
-      stageH = stageDOM.scrollHeight,
-      halfStageW = Math.ceil(stageW / 2),
-      halfStageH = Math.ceil(stageH / 2);
-
-    //拿到一个imageFiguire的大小
-    var imgFiguireDOM = ReactDOM.findDOMNode(this.refs.imgFigure0);
-    var  imgW = imgFiguireDOM.scrollWidth,
-      imgH = imgFiguireDOM.scrollHeight,
-      halfImgW = Math.ceil(imgW / 2),
-      halfImgH = Math.ceil(imgH / 2);
-
-    //计算中心图片位置点
-    this.Constant.centerPos = {
-      left: halfStageW - halfImgW,
-      top: halfStageH - halfImgH
-    }
-
-    //计算左侧右侧区域图片排布位置的取值范围
-    this.Constant.hPosRange.leftSecX[0] = -halfImgW;
-    this.Constant.hPosRange.leftSecX[1] = halfImgW - halfImgW * 3;
-
-    this.Constant.hPosRange.rightSecX[0] = halfStageW - halfImgW;
-    this.Constant.hPosRange.rightSecX[1] = stageW - halfImgW;
-    this.Constant.hPosRange.y[0] = -halfImgH;
-    this.Constant.hPosRange.y[1] = stageH - halfImgH;
-    //计算上侧区域图片排布位置的取值范围
-    this.Constant.vPosRange.topY[0] = -halfImgH;
-    this.Constant.vPosRange.topY[1] = halfStageH - halfImgH * 3;
-    this.Constant.vPosRange.x[0] = halfImgW - imgW;
-    this.Constant.vPosRange.x[1] = halfImgW;
-    this.rearrange(2);
-  }
-
-
+  /***
+   * 点击图片回调方法，设置中心图片，重新排序，一个闭包函数
+   * @param centerIndex
+   * @returns {function(this:AppComponent)}
+   */
   clickRarrange(centerIndex){
     return function () {
+      //首先还原所有数据
+      imageDatas.forEach(function (value, index) {
+        this.state.imgsArrangeArr[index].isInverse=false;
+        this.state.imgsArrangeArr[index].isCenter=false;
+      }.bind(this));
+      //然后重新排列
       this.rearrange(centerIndex);
     }.bind(this)
   }
 
+  /***
+   * 点击图片设置翻转，然后重新设置state,一个闭包函数
+   * @param index
+   * @returns {function(this:AppComponent)}
+   */
   inverse(index){
     return function () {
       var imgsArrangeArr=this.state.imgsArrangeArr;
@@ -191,32 +243,6 @@ class AppComponent extends React.Component {
 
   }
 
-  render() {
-    console.log("enter Render");
-    var imgFigures = [];
-    imageDatas.forEach(function (value, index) {
-      //初始化参数
-      if(!this.state.imgsArrangeArr[index]){
-        this.state.imgsArrangeArr[index]=value;
-        this.state.imgsArrangeArr[index].isInverse=false;
-        this.state.imgsArrangeArr[index].isCenter=false;
-        console.log("初始化第"+index+"个:"+JSON.stringify(value));
-      }
-
-
-      imgFigures.push(<ImgFigure key={index} data={value} ref={'imgFigure' + index} styleObj={this.state.imgsArrangeArr[index]} RarrangeEvent={this.clickRarrange(index)} isInverse={this.inverse(index)}/>);
-    }.bind(this));
-
-    return (
-      <section className="stage" ref="stage">
-        <div>test</div>
-        <section className="img-sec">
-          {imgFigures}
-        </section>
-        <nav className="controller-nav"></nav>
-      </section>
-    );
-  }
 }
 
 AppComponent.defaultProps = {};

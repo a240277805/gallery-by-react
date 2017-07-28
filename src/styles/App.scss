@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'iconfont';  /* project id 368159 */
+  src: url('//at.alicdn.com/t/font_q81lzk6ao1q69a4i.eot');
+  src: url('//at.alicdn.com/t/font_q81lzk6ao1q69a4i.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_q81lzk6ao1q69a4i.woff') format('woff'),
+  url('//at.alicdn.com/t/font_q81lzk6ao1q69a4i.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_q81lzk6ao1q69a4i.svg#iconfont') format('svg');
+}
+
 html, body {
   background-color: #222;
 }
@@ -20,41 +29,91 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-
   background-color: #ddd;
   @at-root {
     //在最终生成css代码中，都生成在最外层
     .img-figure {
-      width: 240px;
-      height: 260px;
-      margin: 0 0 2px 0;
-      padding: 40px;
       position: absolute;
-      background-color: #fff;
-      transition:all 1s ease-in-out;
+      transition: all 1s ease-in-out;
       box-sizing: border-box; //宽度值包含padding
+      overflow: hidden;
+      width: 220px;
+      height: 220px;
+      background: #000000;
+      color: #ffffff;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+      .front, .back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        backface-visibility: hidden;
+      }
+
+      .front {
+        z-index: 2;
+        width: 100%;
+        height: 100%;
+      }
+      .back {
+        box-sizing: border-box; //宽度值包含padding
+        width: 100%;
+        height: 100%;
+        padding: 40px 30px;
+        background: #000;
+        color:#fff;
+      }
+
       img {
         width: 100%;
         height: 100%;
         objec-fit: cover;
       }
-      &.is-inverse{
-        transform-style: preserve-3d;
+
+      &.is-Center {
+        border: dotted;
+        z-index: 11;
+
+      }
+      .is-inverse {
         transform: rotateY(180deg);
       }
-
     }
 
     figcaption {
-      text-align: center;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      border: 1px solid white;
+      border-width: 0 1px;
       .img-title {
+        overflow: hidden;
+        -webkit-transform: translateY(-50%);
+        transform: translateY(-50%);
         margin: 20px 0 0 0;
         color: #a7a0a2;
         font-size: 16px;
       }
+      .caption {
+        overflow: hidden;
+        -webkit-transform: translateY(50%);
+        transform: translateY(50%);
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+      }
+    }
+    .front:hover  img,
+    .front.hover  {
+      opacity: 0.35;
+      -webkit-transform: scale(1.25);
+      transform: scale(1.25);
+      transition: all 0.45s ease-in-out;
     }
   }
-
 }
 
 /* image --end*/
@@ -65,9 +124,39 @@ html, body {
   left: 0;
   bottom: 30px;
   z-index: 101;
-
+  height: 50px;
   width: 100%;
   text-align: center;
+
+  @at-root {
+    .controller-unit {
+      position: relative;
+      display: inline-flex;
+      justify-content: space-around;
+      width: 15px;
+      height: 15px;
+      margin: 0 5px;
+      background-color: #aaa;
+      cursor: pointer;
+      border-radius: 50%;
+      &.isCenter {
+        transform: scale(1.5, 1.5);
+        transition: 0.5s;
+        background-color: #888;
+        &::after {
+          color: #fff;
+          font-family: iconfont;
+          content: "\e605";
+          transform: scale(.7);
+        }
+        &.is-inverse {
+          transform-style: preserve-3d;
+          transform: rotateY(180deg) scale(1.5, 1.5);
+        }
+      }
+
+    }
+  }
 }
 
 /* controller ---  end */

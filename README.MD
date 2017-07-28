@@ -40,3 +40,5 @@ imageDatas = (function genImageURL(imageDatasArr) {
 bind:，React构造方法中的bindV  
 即将handleClick函数与这个组件Component进行绑定以确保在这个处理函数中使用this时可以时刻指向这一组件。
     this.clickHandler=this.clickHandler.bind(this);
+    
+组件和自定义类的导入导出：module.exports=__  ,   export default  __     import __ from ''
