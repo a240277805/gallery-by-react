@@ -75,7 +75,8 @@ class AppComponent extends React.Component {
    */
   render() {
     console.log("enter Render");
-    this.createImgsAndUnits()
+    this.createImgsAndUnits();
+
     return (
       <section className="stage" ref="stage">
         <section className="img-sec">
